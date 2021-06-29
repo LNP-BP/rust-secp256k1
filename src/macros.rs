@@ -35,9 +35,20 @@ macro_rules! impl_safe_debug {
         #[cfg(feature = "bitcoin_hashes")]
         impl ::core::fmt::Debug for $thing {
             fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-                use ::bitcoin_hashes::{Hash, sha256};
+                const DEBUG_HASH_TAG: &[u8] = &[
+                    0x66, 0xa6, 0x77, 0x1b, 0x9b, 0x6d, 0xae, 0xa1, 0xb2, 0xee, 0x4e, 0x07, 0x49,
+                    0x4a, 0xac, 0x87, 0xa9, 0xb8, 0x5b, 0x4b, 0x35, 0x02, 0xaa, 0x6d, 0x0f, 0x79,
+                    0xcb, 0x63, 0xe6, 0xf8, 0x66, 0x22
+                ]; // =SHA256(b"rust-secp256k1DEBUG");
+                use ::bitcoin_hashes::{Hash, sha256, HashEngine};
+
+                let mut engine = sha256::HashEngine::default();
+                engine.input(DEBUG_HASH_TAG);
+                engine.input(DEBUG_HASH_TAG);
+                engine.input(&self.0[..]);
+                let hash = sha256::Hash::from_engine(engine);
+
                 write!(f, "{}(#", stringify!($thing))?;
-                let hash = sha256::Hash::hash(&self.0[..]);
                 for i in &hash[..4] {
                     write!(f, "{:02x}", i)?;
                 }
@@ -53,8 +64,15 @@ macro_rules! impl_safe_debug {
         impl ::core::fmt::Debug for $thing {
             fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                 use ::core::hash::Hasher;
+                const DEBUG_HASH_TAG: &[u8] = &[
+                    0x66, 0xa6, 0x77, 0x1b, 0x9b, 0x6d, 0xae, 0xa1, 0xb2, 0xee, 0x4e, 0x07, 0x49,
+                    0x4a, 0xac, 0x87, 0xa9, 0xb8, 0x5b, 0x4b, 0x35, 0x02, 0xaa, 0x6d, 0x0f, 0x79,
+                    0xcb, 0x63, 0xe6, 0xf8, 0x66, 0x22
+                ]; // =SHA256(b"rust-secp256k1DEBUG");
                 let mut hasher = ::std::collections::hash_map::DefaultHasher::new();
 
+                hasher.write(DEBUG_HASH_TAG);
+                hasher.write(DEBUG_HASH_TAG);
                 hasher.write(&self.0[..]);
                 let hash = hasher.finish();
 
@@ -93,7 +111,7 @@ macro_rules! impl_safe_debug {
                 use ::core::fmt::Write;
                 let mut s = String::with_capacity(self.0.len() * 2);
                 for ch in &self.0[..] {
-                    write!(s, "{:02x}", ch);
+                    let _ = write!(s, "{:02x}", ch);
                 }
                 s
             }

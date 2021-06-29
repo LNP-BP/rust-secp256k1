@@ -667,10 +667,10 @@ mod test {
 
         #[cfg(all(feature = "bitcoin_hashes", not(fuzzing)))]
         assert_eq!(&format!("{:?}", sk),
-                   "SecretKey(#73e200e2...29d234a4)");
+                   "SecretKey(#e545be73...2f001bb3)");
         #[cfg(all(not(feature = "bitcoin_hashes"), feature = "std"))]
         assert_eq!(&format!("{:?}", sk),
-                   "SecretKey(#a463cd1b7ffe86b0)");
+                   "SecretKey(#d3e0c51a23169bb5)");
         #[allow(deprecated)] {
         assert_eq!(sk.format_secret(),
                    "0100000000000000020000000000000003000000000000000400000000000000"); };
